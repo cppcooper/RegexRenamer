@@ -753,10 +753,10 @@ namespace RegexRenamer
 
           // ignore if filtered out
 
-          if( filter != null && filter.IsMatch( dir.Name ) == cbFilterExclude.Checked )
+          if( filter != null && filter.IsMatch(GetDirName(dir)) == cbFilterExclude.Checked )
           {
-            if( !inactiveFiles.ContainsKey( dir.Name.ToLower() ) )
-              inactiveFiles.Add( dir.Name.ToLower(), InactiveReason.Filtered );
+            if( !inactiveFiles.ContainsKey( GetDirName(dir).ToLower() ) )
+              inactiveFiles.Add(GetDirName(dir).ToLower(), InactiveReason.Filtered );
             fileCount.filtered++;
             continue;
           }
@@ -773,8 +773,8 @@ namespace RegexRenamer
           if( hidden ) fileCount.hidden++;
           if( !itmOptionsShowHidden.Checked && hidden )
           {
-            if( !inactiveFiles.ContainsKey( dir.Name.ToLower() ) )
-              inactiveFiles.Add( dir.Name.ToLower(), InactiveReason.Hidden );
+            if( !inactiveFiles.ContainsKey(GetDirName(dir).ToLower() ) )
+              inactiveFiles.Add(GetDirName(dir).ToLower(), InactiveReason.Hidden );
             continue;
           }
 
@@ -800,10 +800,10 @@ namespace RegexRenamer
 
           // ignore if filtered out
 
-          if( filter != null && filter.IsMatch( file.Name ) == cbFilterExclude.Checked )
+          if( filter != null && filter.IsMatch(GetFileName(file)) == cbFilterExclude.Checked )
           {
-            if( !inactiveFiles.ContainsKey( file.Name.ToLower() ) )
-              inactiveFiles.Add( file.Name.ToLower(), InactiveReason.Filtered );
+            if( !inactiveFiles.ContainsKey( GetFileName(file).ToLower() ) )
+              inactiveFiles.Add(GetFileName(file).ToLower(), InactiveReason.Filtered );
             fileCount.filtered++;
             continue;
           }
@@ -821,8 +821,8 @@ namespace RegexRenamer
           if( hidden ) fileCount.hidden++;
           if( !itmOptionsShowHidden.Checked && hidden )
           {
-            if( !inactiveFiles.ContainsKey( file.Name.ToLower() ) )
-              inactiveFiles.Add( file.Name.ToLower(), InactiveReason.Hidden );
+            if( !inactiveFiles.ContainsKey(GetFileName(file).ToLower() ) )
+              inactiveFiles.Add(GetFileName(file).ToLower(), InactiveReason.Hidden );
             continue;
           }
 
@@ -847,7 +847,7 @@ namespace RegexRenamer
 
         // add new item
 
-        dgvFiles.Rows.Add( null, activeFiles[i].Name, null );
+        dgvFiles.Rows.Add( null, GetFileName(activeFiles[i]), null );
         dgvFiles.Rows[i].Tag = i;  // store activeFiles index so we can refer back when under different sorting
 
 
@@ -956,14 +956,14 @@ namespace RegexRenamer
         {
           // check if matches
 
-          activeFiles[afi].Matched = regex.IsMatch( activeFiles[afi].Name );
+          activeFiles[afi].Matched = regex.IsMatch(GetFileName(activeFiles[afi]));
 
 
           // if not, bail early, don't incrememnt autonum
 
           if( !activeFiles[afi].Matched )
           {
-            activeFiles[afi].Preview = activeFiles[afi].Name;
+            activeFiles[afi].Preview = GetFileName(activeFiles[afi]);
             continue;
           }
 
@@ -1009,13 +1009,13 @@ namespace RegexRenamer
           if( !itmChangeCaseNoChange.Checked )
             replacePattern = "\n" + replacePattern + "\n";  // delimit change-case boundaries
           
-          activeFiles[afi].Preview = regex.Replace( activeFiles[afi].Name, replacePattern, count );
+          activeFiles[afi].Preview = regex.Replace(GetFileName(activeFiles[afi]), replacePattern, count );
 
           if( !itmChangeCaseNoChange.Checked )
             activeFiles[afi].Preview = Regex.Replace( activeFiles[afi].Preview, @"\n([^\n]*)\n", new MatchEvaluator( MatchEvalChangeCase ) );
 
           if( activeFiles[afi].Preview.Length == 0 )
-            activeFiles[afi].Preview = activeFiles[afi].Name;
+            activeFiles[afi].Preview = GetFileName(activeFiles[afi]);
         }
 
       }
@@ -1288,17 +1288,41 @@ namespace RegexRenamer
     
     private FileInfo[] GetFiles(DirectoryInfo directory, int depth)
     {
-        FileInfo[] files = directory.GetFiles();
-        int array_length = files.Length;
-        foreach (DirectoryInfo dir in directory.GetDirectories())
-        {
-            FileInfo[] sub_files = GetFiles(dir, depth - 1);
-            Array.Resize<FileInfo>(ref files, array_length + sub_files.Length);
-            Array.Copy(sub_files, 0, files, array_length, sub_files.Length);
-        }
-        return files;
+      FileInfo[] files = directory.GetFiles();
+      int array_length = files.Length;
+      foreach (DirectoryInfo dir in directory.GetDirectories())
+      {
+        FileInfo[] sub_files = GetFiles( dir, depth - 1 );
+        Array.Resize<FileInfo>( ref files, array_length + sub_files.Length );
+        Array.Copy( sub_files, 0, files, array_length, sub_files.Length );
+        array_length = files.Length;
+      }
+      return files;
     }
-
+    private string GetFileName( FileInfo file )
+    {
+      if (useFullPath.Checked)
+      {
+        return file.FullName;
+      }
+      return file.Name;
+    }
+    private string GetFileName( RRItem file )
+    {
+      if (useFullPath.Checked)
+      {
+        return file.Fullpath;
+      }
+      return file.Name;
+    }
+    private string GetDirName( DirectoryInfo dir )
+    {
+      if (useFullPath.Checked)
+      {
+        return dir.FullName;
+      }
+      return dir.Name;
+    }
     // letter sequences
 
     private static string SequenceNumberToLetter( int i )
