@@ -1285,7 +1285,19 @@ namespace RegexRenamer
         this.activeFiles[afi].Selected = row.Selected;
       }
     }
-
+    
+    private FileInfo[] GetFiles(DirectoryInfo directory, int depth)
+    {
+        FileInfo[] files = directory.GetFiles();
+        int array_length = files.Length;
+        foreach (DirectoryInfo dir in directory.GetDirectories())
+        {
+            FileInfo[] sub_files = GetFiles(dir, depth - 1);
+            Array.Resize<FileInfo>(ref files, array_length + sub_files.Length);
+            Array.Copy(sub_files, 0, files, array_length, sub_files.Length);
+        }
+        return files;
+    }
 
     // letter sequences
 
