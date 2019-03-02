@@ -786,7 +786,7 @@ namespace RegexRenamer
         FileInfo[] files = new FileInfo[0];
         try
         {
-          files = activeDir.GetFiles();
+          files = GetFiles( activeDir, 2 );
         }
         catch( Exception ex )
         {
