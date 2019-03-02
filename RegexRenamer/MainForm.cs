@@ -1,6 +1,6 @@
 /* =============================================================================
  * RegexRenamer                                     Copyright (c) 2011 Xiperware
- * http://regexrenamer.sourceforge.net/                      xiperware@gmail.com
+ * https://github.com/Sukram21/RegexRenamer/                      sukram.mueller@gmail.com
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License v2, as published by the Free
@@ -753,10 +753,10 @@ namespace RegexRenamer
 
           // ignore if filtered out
 
-          if( filter != null && filter.IsMatch( dir.Name ) == cbFilterExclude.Checked )
+          if( filter != null && filter.IsMatch(GetDirName(dir)) == cbFilterExclude.Checked )
           {
-            if( !inactiveFiles.ContainsKey( dir.Name.ToLower() ) )
-              inactiveFiles.Add( dir.Name.ToLower(), InactiveReason.Filtered );
+            if( !inactiveFiles.ContainsKey( GetDirName(dir).ToLower() ) )
+              inactiveFiles.Add(GetDirName(dir).ToLower(), InactiveReason.Filtered );
             fileCount.filtered++;
             continue;
           }
@@ -773,8 +773,8 @@ namespace RegexRenamer
           if( hidden ) fileCount.hidden++;
           if( !itmOptionsShowHidden.Checked && hidden )
           {
-            if( !inactiveFiles.ContainsKey( dir.Name.ToLower() ) )
-              inactiveFiles.Add( dir.Name.ToLower(), InactiveReason.Hidden );
+            if( !inactiveFiles.ContainsKey(GetDirName(dir).ToLower() ) )
+              inactiveFiles.Add(GetDirName(dir).ToLower(), InactiveReason.Hidden );
             continue;
           }
 
@@ -786,7 +786,7 @@ namespace RegexRenamer
         FileInfo[] files = new FileInfo[0];
         try
         {
-          files = activeDir.GetFiles();
+          files = GetFiles(activeDir, 2);
         }
         catch( Exception ex )
         {
@@ -800,10 +800,10 @@ namespace RegexRenamer
 
           // ignore if filtered out
 
-          if( filter != null && filter.IsMatch( file.Name ) == cbFilterExclude.Checked )
+          if( filter != null && filter.IsMatch(GetFileName(file)) == cbFilterExclude.Checked )
           {
-            if( !inactiveFiles.ContainsKey( file.Name.ToLower() ) )
-              inactiveFiles.Add( file.Name.ToLower(), InactiveReason.Filtered );
+            if( !inactiveFiles.ContainsKey( GetFileName(file).ToLower() ) )
+              inactiveFiles.Add(GetFileName(file).ToLower(), InactiveReason.Filtered );
             fileCount.filtered++;
             continue;
           }
@@ -821,8 +821,8 @@ namespace RegexRenamer
           if( hidden ) fileCount.hidden++;
           if( !itmOptionsShowHidden.Checked && hidden )
           {
-            if( !inactiveFiles.ContainsKey( file.Name.ToLower() ) )
-              inactiveFiles.Add( file.Name.ToLower(), InactiveReason.Hidden );
+            if( !inactiveFiles.ContainsKey(GetFileName(file).ToLower() ) )
+              inactiveFiles.Add(GetFileName(file).ToLower(), InactiveReason.Hidden );
             continue;
           }
 
@@ -847,7 +847,7 @@ namespace RegexRenamer
 
         // add new item
 
-        dgvFiles.Rows.Add( null, activeFiles[i].Name, null );
+        dgvFiles.Rows.Add( null, GetFileName(activeFiles[i]), null );
         dgvFiles.Rows[i].Tag = i;  // store activeFiles index so we can refer back when under different sorting
 
 
@@ -956,14 +956,14 @@ namespace RegexRenamer
         {
           // check if matches
 
-          activeFiles[afi].Matched = regex.IsMatch( activeFiles[afi].Name );
+          activeFiles[afi].Matched = regex.IsMatch(GetFileName(activeFiles[afi]));
 
 
           // if not, bail early, don't incrememnt autonum
 
           if( !activeFiles[afi].Matched )
           {
-            activeFiles[afi].Preview = activeFiles[afi].Name;
+            activeFiles[afi].Preview = GetFileName(activeFiles[afi]);
             continue;
           }
 
@@ -1009,13 +1009,13 @@ namespace RegexRenamer
           if( !itmChangeCaseNoChange.Checked )
             replacePattern = "\n" + replacePattern + "\n";  // delimit change-case boundaries
           
-          activeFiles[afi].Preview = regex.Replace( activeFiles[afi].Name, replacePattern, count );
+          activeFiles[afi].Preview = regex.Replace(GetFileName(activeFiles[afi]), replacePattern, count );
 
           if( !itmChangeCaseNoChange.Checked )
             activeFiles[afi].Preview = Regex.Replace( activeFiles[afi].Preview, @"\n([^\n]*)\n", new MatchEvaluator( MatchEvalChangeCase ) );
 
           if( activeFiles[afi].Preview.Length == 0 )
-            activeFiles[afi].Preview = activeFiles[afi].Name;
+            activeFiles[afi].Preview = GetFileName(activeFiles[afi]);
         }
 
       }
@@ -1285,8 +1285,44 @@ namespace RegexRenamer
         this.activeFiles[afi].Selected = row.Selected;
       }
     }
-
-
+    
+    private FileInfo[] GetFiles(DirectoryInfo directory, int depth)
+    {
+      FileInfo[] files = directory.GetFiles();
+      int array_length = files.Length;
+      foreach (DirectoryInfo dir in directory.GetDirectories())
+      {
+        FileInfo[] sub_files = GetFiles( dir, depth - 1 );
+        Array.Resize<FileInfo>( ref files, array_length + sub_files.Length );
+        Array.Copy( sub_files, 0, files, array_length, sub_files.Length );
+        array_length = files.Length;
+      }
+      return files;
+    }
+    private string GetFileName( FileInfo file )
+    {
+      if (useFullPath.Checked)
+      {
+        return file.FullName;
+      }
+      return file.Name;
+    }
+    private string GetFileName( RRItem file )
+    {
+      if (useFullPath.Checked)
+      {
+        return file.Fullpath;
+      }
+      return file.Name;
+    }
+    private string GetDirName( DirectoryInfo dir )
+    {
+      if (useFullPath.Checked)
+      {
+        return dir.FullName;
+      }
+      return dir.Name;
+    }
     // letter sequences
 
     private static string SequenceNumberToLetter( int i )
@@ -1370,10 +1406,14 @@ namespace RegexRenamer
       string[] parts = allowRenSub ? testFilename.Split( '\\' ) : new string[] { testFilename };
       for( int i = 0; i < parts.Length; i++ )
       {
-        if( allowRenSub )
-          match = regValidateInvalidCharsAllowPath.Match( parts[i] );  // ([/:*?\"<>|])
+        if(i == 0 && useFullPath.Checked)
+        {
+          continue;
+        }
+        if ( allowRenSub )
+          match = regValidateInvalidCharsAllowPath.Match(parts[i]);  // ([/:*?\"<>|])
         else
-          match = regValidateInvalidChars.Match( parts[i] );           // ([\\\\/:*?\"<>|])
+          match = regValidateInvalidChars.Match(parts[i]);           // ([\\\\/:*?\"<>|])
 
         if( match.Success )
           if( parts.Length > 1 && i != parts.Length - 1 )
@@ -1439,8 +1479,6 @@ namespace RegexRenamer
     private void ResetFields()
     {
       EnableUpdates       = false;
-      cmbMatch.Text       = "";
-      txtReplace.Text     = "";
       cbModifierI.Checked = false;
       cbModifierG.Checked = false;
       cbModifierX.Checked = false;
