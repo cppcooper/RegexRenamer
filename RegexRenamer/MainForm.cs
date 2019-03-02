@@ -1,6 +1,6 @@
 /* =============================================================================
  * RegexRenamer                                     Copyright (c) 2011 Xiperware
- * http://regexrenamer.sourceforge.net/                      xiperware@gmail.com
+ * https://github.com/Sukram21/RegexRenamer/                      sukram.mueller@gmail.com
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License v2, as published by the Free
@@ -786,7 +786,7 @@ namespace RegexRenamer
         FileInfo[] files = new FileInfo[0];
         try
         {
-          files = GetFiles( activeDir, 2 );
+          files = GetFiles(activeDir, 2);
         }
         catch( Exception ex )
         {
