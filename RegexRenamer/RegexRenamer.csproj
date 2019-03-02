@@ -12,12 +12,12 @@
     <AssemblyName>RegexRenamer</AssemblyName>
     <TargetZone>LocalIntranet</TargetZone>
     <GenerateManifests>true</GenerateManifests>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
     <AssemblyOriginatorKeyFile>
     </AssemblyOriginatorKeyFile>
     <ManifestCertificateThumbprint>CFEFBDA896C2BB01B239E8B08AA721CB5F4ED8C5</ManifestCertificateThumbprint>
     <ManifestKeyFile>Xiperware.pfx</ManifestKeyFile>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <StartupObject>RegexRenamer.Program</StartupObject>
