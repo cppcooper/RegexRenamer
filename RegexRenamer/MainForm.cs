@@ -1406,10 +1406,14 @@ namespace RegexRenamer
       string[] parts = allowRenSub ? testFilename.Split( '\\' ) : new string[] { testFilename };
       for( int i = 0; i < parts.Length; i++ )
       {
-        if( allowRenSub )
-          match = regValidateInvalidCharsAllowPath.Match( parts[i] );  // ([/:*?\"<>|])
+        if(i == 0 && useFullPath.Checked)
+        {
+          continue;
+        }
+        if ( allowRenSub )
+          match = regValidateInvalidCharsAllowPath.Match(parts[i]);  // ([/:*?\"<>|])
         else
-          match = regValidateInvalidChars.Match( parts[i] );           // ([\\\\/:*?\"<>|])
+          match = regValidateInvalidChars.Match(parts[i]);           // ([\\\\/:*?\"<>|])
 
         if( match.Success )
           if( parts.Length > 1 && i != parts.Length - 1 )
@@ -1475,8 +1479,6 @@ namespace RegexRenamer
     private void ResetFields()
     {
       EnableUpdates       = false;
-      cmbMatch.Text       = "";
-      txtReplace.Text     = "";
       cbModifierI.Checked = false;
       cbModifierG.Checked = false;
       cbModifierX.Checked = false;
